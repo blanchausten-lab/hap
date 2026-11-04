@@ -692,6 +692,7 @@
     <Content Include="style\jquery.jqplot.css" />
     <Content Include="style\jquery.mobile-1.0.css" />
     <Content Include="style\basestyle.css" />
+    <Content Include="style\modern.css" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="images\arrow-right.gif" />

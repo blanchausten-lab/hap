@@ -10,6 +10,7 @@
         <link rel="shortcut icon" href="~/favicon.ico" />
         <link href="<%: ResolveClientUrl("~/style/jquery-ui.css?" + HAP.Web.Controls.HAPTag.HAPVersion.ToString()) %>" rel="stylesheet" type="text/css" />
         <link href="<%: ResolveClientUrl("~/style/basestyle.css?" + HAP.Web.Controls.HAPTag.HAPVersion.ToString()) %>" rel="stylesheet" type="text/css" />
+        <link href="<%: ResolveClientUrl("~/style/modern.css?" + HAP.Web.Controls.HAPTag.HAPVersion.ToString()) %>" rel="stylesheet" type="text/css" />
         <link href="<%: ResolveClientUrl("~/style/mobile-base.css?" + HAP.Web.Controls.HAPTag.HAPVersion.ToString()) %>" rel="stylesheet" type="text/css" media="handheld" />
         <link href="<%: ResolveClientUrl("~/style/mobile-base.css?" + HAP.Web.Controls.HAPTag.HAPVersion.ToString()) %>" rel="stylesheet" type="text/css" media="screen and (max-device-width: 780px)" />
         <link href="<%: ResolveClientUrl("~/api/css?" + Request.Path + "=" + HAP.Web.Controls.HAPTag.HAPVersion.ToString())%>" rel="stylesheet" type="text/css" />

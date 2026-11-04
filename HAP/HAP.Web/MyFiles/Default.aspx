@@ -18,7 +18,7 @@
 			<a class="dropdown" id="view" href="#"><hap:LocalResource runat="server" StringPath="myfiles/view" /></a>
 		</div>
 		<div style="float: left;">
-			<a href="#" id="backup"><span></span></a>
+			<a href="#" id="backup" title="Back" aria-label="Back"><span></span></a>
 		</div>
 		<div id="maintools">
 			<input type="text" id="newfoldertext" /><a id="newfolder" href="#"  title="<%=Localize("myfiles/newfolder") %>"><hap:LocalResource runat="server" StringPath="myfiles/newfolder" /></a>
@@ -145,6 +145,10 @@
 	</div>
 	<div id="Tree" class="tile-border-color">
 	</div>
+	<nav id="hapPathBar" aria-label="Folder path" style="display: none;">
+		<a href="#" id="pathUp" title="Go up one folder (Backspace or Alt+Up)"><span class="pathup-icon" aria-hidden="true">&#8593;</span> Up</a>
+		<ol id="pathCrumbs"></ol>
+	</nav>
 	<div id="MyFilesHeaddings">
 		<a class="name" href="javascript:void(Load('Default', Sortorder == 'Default' ? (Sortdirection == 1 ? 2 : 1) : 1));"><hap:LocalResource runat="server" StringPath="name" /></a><a class="modified" href="javascript:void(Load('UnderlyingModified', Sortorder == 'UnderlyingModified' ? (Sortdirection == 1 ? 2 : 1) : 1));"><hap:LocalResource runat="server" StringPath="myfiles/modified" /></a><a class="type" href="javascript:void(Load('Type', Sortorder == 'Type' ? (Sortdirection == 1 ? 2 : 1) : 1));"><hap:LocalResource runat="server" StringPath="myfiles/type" /></a><a class="extension" href="javascript:void(Load('Extension', Sortorder == 'Extension' ? (Sortdirection == 1 ? 2 : 1) : 1));"><hap:LocalResource runat="server" StringPath="myfiles/extension" /></a><a href="javascript:void(Load('UnderlyingSize', Sortorder == 'UnderlyingSize' ? (Sortdirection == 1 ? 2 : 1) : 1));" class="size"><hap:LocalResource runat="server" StringPath="myfiles/size" /></a></div>
 	<div id="MyFiles" class="tiles" data-role="content">
@@ -161,6 +165,62 @@
 		var lazytimer = null;
 		var temp, clipboard, table, curitem, curpath, Sortorder, Sortdirection = null;
 		var uploads = new Array();
+		// How long (ms) the second click of a double click can take. Longer than the
+		// Windows default (500ms) so files and folders are easier to open.
+		var DoubleClickTime = 900;
+		var driveNames = {};
+		try { driveNames = JSON.parse(window.sessionStorage.getItem("hapDriveNames")) || {}; } catch (e) { driveNames = {}; }
+		var driveNamesRequested = false;
+		// Splits a HAP path such as "H\Folder 1\Folder 2" into its parts
+		function PathSegments(p) {
+			var parts = (p || "").split(/\\|\/|%5C/i), segs = [];
+			for (var i = 0; i < parts.length; i++) if (parts[i] != "") segs.push(parts[i]);
+			return segs;
+		}
+		// Path segments are URL encoded with | in place of %
+		function DecodeSegment(s) {
+			try { return decodeURIComponent(s.replace(/\|([0-9a-f]{2})/gi, "%$1")); } catch (e) { return s; }
+		}
+		// Path of the folder above the current one ("" is the list of drives)
+		function ParentPath() {
+			var segs = PathSegments(curpath);
+			if (segs.length <= 1) return "";
+			if (segs.length == 2) return segs[0] + "\\";
+			return segs.slice(0, segs.length - 1).join("\\");
+		}
+		function GoUp() {
+			if (curpath == null) return;
+			window.location.href = "#" + ParentPath();
+		}
+		function RenderPath() {
+			var bar = $("#hapPathBar"), list = $("#pathCrumbs").empty();
+			if (curpath == null) { bar.hide(); return; }
+			var segs = PathSegments(curpath);
+			list.append($('<li/>').append($('<a href="#"/>').text(hap.common.getLocal("myfiles/mydrives") || "My Drives")));
+			var href = "";
+			for (var i = 0; i < segs.length; i++) {
+				if (i == 0) href = segs[0] + "\\";
+				else if (i == 1) href = href + segs[i];
+				else href = href + "\\" + segs[i];
+				var text = i == 0 ? (driveNames[segs[0].toUpperCase()] || segs[0].toUpperCase() + ":") : DecodeSegment(segs[i]);
+				var li = $('<li/>');
+				if (i == segs.length - 1) li.append($('<span aria-current="page"/>').text(text));
+				else li.append($('<a/>').attr("href", "#" + href).text(text));
+				list.append(li);
+			}
+			$("#pathUp").attr("href", "#" + ParentPath());
+			bar.show();
+			$(window).trigger("resize");
+			if (!driveNames[(segs[0] || "").toUpperCase()] && !driveNamesRequested) {
+				driveNamesRequested = true;
+				$.ajax({ type: 'GET', url: hap.common.formatJSONUrl('~/api/MyFiles/Drives'), dataType: 'json', contentType: 'application/json;',
+					success: function (data) { SaveDriveNames(data); RenderPath(); } });
+			}
+		}
+		function SaveDriveNames(data) {
+			for (var i = 0; i < data.length; i++) driveNames[data[i].Path.substr(0, 1).toUpperCase()] = data[i].Name;
+			try { window.sessionStorage.setItem("hapDriveNames", JSON.stringify(driveNames)); } catch (e) { }
+		}
 		$(window).hashchange(function () {
 			$("#filter").val(hap.common.getLocal("search"));
 			if (window.location.href.split('#')[1] != "" && window.location.href.split('#')[1]) {
@@ -181,6 +241,7 @@
 				$("#MyFiles").removeClass("details").removeClass("small").removeClass("medium").removeClass("large");
 				$("#MyFilesHeaddings").hide();
 			}
+			RenderPath();
 			Load();
 		});
 	    function Zip(zipfile, index) {
@@ -686,11 +747,8 @@
 					for (var x = 0; x < items.length; x++) if (items[x].Id == $(this).attr("id")) item = items[x];
 					var s = "";
 					for (var i = 0; i < SelectedItems().length; i++) s += SelectedItems()[i].Data.Name + "\n";
-					$("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/" + ((keys.ctrl) ? "copy/copying" : "move/moving")) + " 1 " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items") });
-					$("#progressstatus .progress").progressbar({ value: (1 / SelectedItems().length) * 100 });
-					if (keys.ctrl) Copy(0, item.Data.Path);
-					else if (confirm(hap.common.getLocal("myfiles/move/question1") + "\n\n" + s)) Move(0, item.Data.Path);
-					else $("#progressstatus").dialog("close");
+					if (keys.ctrl) { $("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/" + ((keys.ctrl) ? "copy/copying" : "move/moving")) + " 1 " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items") }); $("#progressstatus .progress").progressbar({ value: (1 / SelectedItems().length) * 100 }); Copy(0, item.Data.Path); }
+					else if (confirm(hap.common.getLocal("myfiles/move/question1") + "\n\n" + s)) { $("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/" + ((keys.ctrl) ? "copy/copying" : "move/moving")) + " 1 " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items") }); $("#progressstatus .progress").progressbar({ value: (1 / SelectedItems().length) * 100 }); Move(0, item.Data.Path); }
 					keys.ctrl = keys.shift = false;
 				}, over: function (event, ui) {
 					var item = null;
@@ -731,7 +789,7 @@
 						}
 					};
 				}
-				$("#" + this.Id).bind("click", this.Click).bind("dblclick", this.DoubleClick).contextMenu('contextMenu', {
+				$("#" + this.Id).bind("click", this.Click).contextMenu('contextMenu', {
 					onContextMenu: function (e) {
 						var element = $(e.target);
 						if (!element.is("a")) element = element.parent("a");
@@ -819,12 +877,9 @@
 							}
 						},
 						'con-delete': function (t) {
-							$("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/delete/deletingitem1") + " 1 " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items") });
-							$("#progressstatus .progress").progressbar({ value: (1 / SelectedItems().length) * 100 });
 							var s = "";
 							for (var i = 0; i < SelectedItems().length; i++) s += SelectedItems()[i].Data.Name + "\n";
-							if (confirm(hap.common.getLocal("myfiles/delete/question1") + "\n\n" + s)) Delete(0);
-							else $("#progressstatus").dialog("close");
+							if (confirm(hap.common.getLocal("myfiles/delete/question1") + "\n\n" + s)) { $("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/delete/deletingitem1") + " 1 " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items") }); $("#progressstatus .progress").progressbar({ value: (1 / SelectedItems().length) * 100 }); Delete(0); }
 						},
 						'con-rename': function (t) {
 						    if (SelectedItems().length > 1) {
@@ -1060,7 +1115,7 @@
 				for (var x = 0; x < items.length; x++) if (items[x].Id == $(this).attr("id")) item = items[x];
 				clearTimeout(item.ClickTimer);
 				item.Clicks++;
-				item.ClickTimer = setTimeout("for (var x = 0; x < items.length; x++) if (items[x].Id == '" + item.Id + "') items[x].Clicks = 0;", 500);
+				item.ClickTimer = setTimeout(function () { item.Clicks = 0; }, DoubleClickTime);
 				if (item.Clicks == 1) {
 					var i = -1, z = -1;
 					for (var x = 0; x < items.length; x++) {
@@ -1080,7 +1135,10 @@
 					item.Refresh();
 					RefreshToolbar();
 				} else {
-
+					// Second click within DoubleClickTime opens the item
+					item.Clicks = 0;
+					clearTimeout(item.ClickTimer);
+					item.DoubleClick.call(this, e);
 				}
 				return false;
 			};
@@ -1099,6 +1157,7 @@
 					contentType: 'application/json;',
 					success: function (data) {
 						items = new Array();
+						SaveDriveNames(data);
 						$("#MyFiles").html("").addClass("drives");
 						$(window).trigger("resize");
 						for (var i = 0; i < data.length; i++)
@@ -1188,10 +1247,18 @@
 		        $("#Tree").css("top", $("#search").position().top + $("#search").height()).css("height", $("#hapContent").height() - $("#search").height()); 
 		        $("#MyFiles").css("min-height", parseInt($("#hapContent").css("min-height").replace(/px/g, "")) - 2); 
 		        $("#Views,#directedit").css("left", $('#view').position().left);
+		        $("#hapPathBar").css("margin-left", $("#Tree").is(":visible") ? $("#Tree").width() + 5 : 0);
+		        $("#MyFilesHeaddings").css("top", $("#hapHeader").position().top + $("#hapHeader").height() + ($("#hapPathBar").is(":visible") ? $("#hapPathBar").outerHeight() : 0));
 		    });
 		    if (navigator.appVersion.indexOf("Win") == -1) {
 		        $("#de").remove();
 		    }
+		    // Progress boxes only fade in if the action takes a while, so quick actions don't flash the screen
+		    $(document).on("dialogopen", "#progressstatus, #loadingbox", function () {
+		        var d = $(this).dialog("instance");
+		        $(this).closest(".ui-dialog").removeClass("hap-delayed").addClass("hap-delayed");
+		        if (d && d.overlay) d.overlay.addClass("hap-delayed");
+		    });
 		    $("#properties").dialog({ autoOpen: false });
 		    $("#loadingbox").dialog({ autoOpen: false });
 			$("#preview").dialog({ autoOpen: false });
@@ -1243,11 +1310,8 @@
 								for (var x = 0; x < items.length; x++) if (items[x].Id == $(this).attr("id")) item = items[x];
 								var s = "";
 								for (var i = 0; i < SelectedItems().length; i++) s += SelectedItems()[i].Data.Name + "\n";
-								$("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/" + ((keys.ctrl) ? "copy/copying" : "move/moving")) + " 1 " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items") });
-								$("#progressstatus .progress").progressbar({ value: (1 / SelectedItems().length) * 100 });
-								if (keys.ctrl) Copy(0, $(this).attr("href").substr(1));
-								else if (confirm(hap.common.getLocal("myfiles/move/question1") + "\n\n" + s)) Move(0, $(this).attr("href").substr(1));
-								else $("#progressstatus").dialog("close");
+								if (keys.ctrl) { $("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/" + ((keys.ctrl) ? "copy/copying" : "move/moving")) + " 1 " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items") }); $("#progressstatus .progress").progressbar({ value: (1 / SelectedItems().length) * 100 }); Copy(0, $(this).attr("href").substr(1)); }
+								else if (confirm(hap.common.getLocal("myfiles/move/question1") + "\n\n" + s)) { $("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/" + ((keys.ctrl) ? "copy/copying" : "move/moving")) + " 1 " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items") }); $("#progressstatus .progress").progressbar({ value: (1 / SelectedItems().length) * 100 }); Move(0, $(this).attr("href").substr(1)); }
 
 							}, over: function (event, ui) {
 								$("#dragobject span").text(hap.common.getLocal("myfiles/" + ((keys.ctrl) ? "copy/copy" : "move/move")) + " " + hap.common.getLocal("to") + " " + $(this).text()).show();
@@ -1368,11 +1432,8 @@
 			$("#toolbar-paste").animate({ width: 0 }, { duration: 500, complete: function() { $("#toolbar-paste-container").hide(); $("#toolbar-paste").css("display", "none") } }).click(function () {
 				var s = "";
 				for (var i = 0; i < clipboard.items.length; i++) s += clipboard.items[i].Data.Name + "\n";
-				$("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/" + ((clipboard.mode == 'copy') ? "copy/copying" : "move/moving")) + " 1 " + hap.common.getLocal("of") + " " + clipboard.items.length + " " + hap.common.getLocal("items") });
-				$("#progressstatus .progress").progressbar({ value: (1 / clipboard.items.length) * 100 });
-				if (clipboard.mode == 'copy') CopyClipboard(0, (curpath.length == 2 ? curitem.Location.substr(0, curitem.Location.length -1 ) : curitem.Location).replace(/:/g, ""));
-				else if (confirm(hap.common.getLocal("myfiles/move/question1") + "\n\n" + s)) MoveClipboard(0, (curpath.length == 2 ? curitem.Location.substr(0, curitem.Location.length -1 ) : curitem.Location).replace(/:/g, ""));
-				else $("#progressstatus").dialog("close");
+				if (clipboard.mode == 'copy') { $("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/" + ((clipboard.mode == 'copy') ? "copy/copying" : "move/moving")) + " 1 " + hap.common.getLocal("of") + " " + clipboard.items.length + " " + hap.common.getLocal("items") }); $("#progressstatus .progress").progressbar({ value: (1 / clipboard.items.length) * 100 }); CopyClipboard(0, (curpath.length == 2 ? curitem.Location.substr(0, curitem.Location.length -1 ) : curitem.Location).replace(/:/g, "")); }
+				else if (confirm(hap.common.getLocal("myfiles/move/question1") + "\n\n" + s)) { $("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/" + ((clipboard.mode == 'copy') ? "copy/copying" : "move/moving")) + " 1 " + hap.common.getLocal("of") + " " + clipboard.items.length + " " + hap.common.getLocal("items") }); $("#progressstatus .progress").progressbar({ value: (1 / clipboard.items.length) * 100 }); MoveClipboard(0, (curpath.length == 2 ? curitem.Location.substr(0, curitem.Location.length -1 ) : curitem.Location).replace(/:/g, "")); }
 				return false;
 			});
 			$("#toolbar-unzip").animate({ width: 0 }, { duration: 500, complete: function() { $("#toolbar-unzip").css("display", "none") } }).click(function () {
@@ -1463,12 +1524,9 @@
 				return false;
 			});
 			$("#toolbar-delete").animate({ width: 0 }, { duration: 500, complete: function() { $("#toolbar-delete").css("display", "none") } }).click(function () {
-				$("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/delete/deletingitem1") + " 1 " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items") });
-				$("#progressstatus .progress").progressbar({ value: (1 / SelectedItems().length) * 100 });
 				var s = "";
 				for (var i = 0; i < SelectedItems().length; i++) s += SelectedItems()[i].Data.Name + "\n";
-				if (confirm(hap.common.getLocal("myfiles/delete/question1") + "\n\n" + s)) Delete(0);
-				else $("#progressstatus").dialog("close");
+				if (confirm(hap.common.getLocal("myfiles/delete/question1") + "\n\n" + s)) { $("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/delete/deletingitem1") + " 1 " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items") }); $("#progressstatus .progress").progressbar({ value: (1 / SelectedItems().length) * 100 }); Delete(0); }
 				return false;
 			});
 			$("#renamebox").focusout(function() {
@@ -1625,20 +1683,22 @@
 		    $("#search input").focus(function () { if ($(this).val().match(hap.common.getLocal("search"))) $(this).val(""); }).blur(function () { if ($(this).val() == "") $(this).val(hap.common.getLocal("search") + ": " + curitem.Name); });
 		    $(window).trigger("resize");
 			$("#MyFiles").css("margin-left", $("#Tree").width() + 5);
-			$("#MyFilesHeaddings").css("margin-left", $("#Tree").width() + 5).css("top", $("#hapHeader").position().top + $("#hapHeader").height());
+			$("#MyFilesHeaddings").css("margin-left", $("#Tree").width() + 5);
 			$(window).trigger("hashchange");
 		});
 	    $(document).bind('keydown', function (event) { 
 	        var keycode = (event.keyCode ? event.keyCode : (event.which ? event.which : event.charCode)); 
 	        keys.shift = (keycode == 16); keys.ctrl = (keycode == 17); 
+	        if (curpath != null && !$("input, textarea, select").is(":focus") && $(".ui-dialog:visible, .hapPopup").length == 0 && (keycode == 8 || (event.altKey && keycode == 38))) {
+	            event.preventDefault();
+	            GoUp();
+	            return;
+	        }
 	        if (keycode == 46 && SelectedItems().length > 0 && !$("input").is(":focus")) { 
 	            event.preventDefault();
-	            $("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/delete/deletingitem1") + " 1 " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items") });
-	            $("#progressstatus .progress").progressbar({ value: (1 / SelectedItems().length) * 100 });
 	            var s = "";
 	            for (var i = 0; i < SelectedItems().length; i++) s += SelectedItems()[i].Data.Name + "\n";
-	            if (confirm(hap.common.getLocal("myfiles/delete/question1") + "\n\n" + s)) Delete(0);
-	            else $("#progressstatus").dialog("close");
+	            if (confirm(hap.common.getLocal("myfiles/delete/question1") + "\n\n" + s)) { $("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/delete/deletingitem1") + " 1 " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items") }); $("#progressstatus .progress").progressbar({ value: (1 / SelectedItems().length) * 100 }); Delete(0); }
 	        }
 	    });
 	    $(document).bind('keyup', function (event) { keys.shift = keys.ctrl = false; });
