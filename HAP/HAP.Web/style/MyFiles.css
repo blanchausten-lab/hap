@@ -131,3 +131,73 @@ button { overflow: hidden; text-overflow: hidden; }
 @media only screen and (max-width: 550px)  {
     #MyFiles { padding-top: 80px; margin-left: 0!important }
 }
+
+/* ---------------------------------------------------------------
+   Modern look for My Files (softer cards instead of solid blocks)
+   --------------------------------------------------------------- */
+#search { background: #fff; border-right: 1px solid #dde3ea; border-bottom: 1px solid #dde3ea; }
+    #search input { width: 100%; padding: 4px 8px; font-size: 14px; }
+#Tree { background: #fff; border-right: 1px solid #dde3ea; font-size: 13px; }
+a.dynatree-title { border-radius: 4px; padding: 2px 6px; color: #1f2933; }
+a.dynatree-title:hover, .dynatree-node:hover { background: #e8f1fa; border-color: #e8f1fa; }
+a.dynatree-title:active, .dynatree-node:active, .dynatree-node:active > a { background: #0060a6; border-color: #0060a6; color: #fff; }
+
+/* Folder path bar */
+#hapPathBar { position: -webkit-sticky; position: sticky; top: 40px; z-index: 20; display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; padding: 8px 12px; margin: 0 0 8px 0; background: #fff; border-bottom: 1px solid #dde3ea; font-size: 14px; }
+#pathUp { display: inline-block; flex: none; padding: 5px 12px; border: 1px solid #c3cbd5; border-radius: 6px; color: #1f2933; background: #fff; text-decoration: none; font-weight: 600; }
+    #pathUp:hover { background: #e8f1fa; border-color: #0060a6; color: #0060a6; }
+    #pathUp .pathup-icon { font-weight: bold; }
+#pathCrumbs { display: flex; flex-wrap: wrap; align-items: center; list-style: none; margin: 0; padding: 0; min-width: 0; }
+    #pathCrumbs li { display: inline-flex; align-items: center; min-width: 0; }
+    #pathCrumbs li + li:before { content: '\203A'; color: #93a1b2; padding: 0 6px; font-size: 18px; line-height: 1; }
+    #pathCrumbs a, #pathCrumbs span { display: inline-block; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 4px 8px; border-radius: 6px; }
+    #pathCrumbs a { color: #0060a6; text-decoration: none; }
+    #pathCrumbs a:hover { background: #e8f1fa; text-decoration: underline; }
+    #pathCrumbs span { color: #1f2933; font-weight: 600; }
+
+/* Files, folders and drives as cards (box size kept the same as before) */
+#MyFiles { padding: 4px 4px 0 8px; }
+#MyFiles a { border-width: 1px; padding: 7px; margin: 0 6px 6px 0; border-radius: 10px; font-size: 12px; transition: background-color .12s, border-color .12s, box-shadow .12s; }
+#MyFiles a.Selectable, #MyFiles a.Drive { background-color: #fff; border-color: #dde3ea; color: #5f6b7a; box-shadow: 0 1px 2px rgba(16, 24, 40, .05); }
+#MyFiles a.Selectable .label, #MyFiles a.Drive .label { color: #1f2933; font-size: 13px; line-height: 16px; }
+#MyFiles a.Selectable:hover, #MyFiles a.Drive:hover, .droppable-hover { background-color: #f2f7fc !important; border-color: #9cc3e6 !important; box-shadow: 0 2px 6px rgba(16, 24, 40, .1); }
+#MyFiles a.Selectable:active, #MyFiles a.Drive:active { background-color: #e8f1fa; border-color: #0060a6; color: #5f6b7a; }
+#MyFiles a.Selectable:active .label, #MyFiles a.Drive:active .label { color: #1f2933; }
+#MyFiles a.Selectable:active .type { color: #5f6b7a; }
+#MyFiles a.Selected, #MyFiles a.Selected:hover { background-color: #dceafa !important; border-color: #0060a6 !important; color: #3d4a5a; box-shadow: 0 0 0 1px #0060a6; }
+#MyFiles a.Selected .label, #MyFiles a.Selected:active .label { color: #0b2540; }
+#MyFiles a.Selected:active, #MyFiles a.Selected:active .type { color: #3d4a5a; }
+#MyFiles a.Drive { height: 70px; }
+#MyFiles a.Drive .icon { background: #0060a6; color: #fff; border-radius: 10px; font-size: 34px; }
+#MyFiles a .progress { background: #e6ebf1; border-radius: 999px; height: 10px; margin-top: 10px; overflow: visible; }
+#MyFiles a .progress i { background: #2e9d5b; border-radius: 999px; height: 10px; margin: 0; }
+#MyFiles a .progress label { color: #5f6b7a; top: 12px; height: 14px; line-height: 14px; text-align: left; }
+
+/* Details view: lighter table instead of black header blocks */
+#MyFiles.details a { border-radius: 0; box-shadow: none; }
+#MyFiles.details a span, #MyFiles.details a img { border-color: #eef1f5; }
+#MyFiles.details a .label, #MyFiles.details a img { border-left: 0; }
+#MyFilesHeaddings { border-color: #dde3ea; }
+#MyFilesHeaddings a, #MyFilesHeaddings span { background: #fff; color: #1f2933; border-right: 1px solid #dde3ea; border-bottom: 1px solid #dde3ea; font-weight: 600; padding-left: 4px; text-decoration: none; }
+#MyFilesHeaddings a:hover { background: #e8f1fa; }
+
+/* Small / medium / large icon views stay compact */
+#MyFiles.small a, #MyFiles.medium a, #MyFiles.large a { box-shadow: none; }
+
+/* Right-click menu */
+#jqContextMenu ul { border: 1px solid #dde3ea !important; border-radius: 10px; box-shadow: 0 6px 16px rgba(16, 24, 40, .16); padding: 4px; overflow: hidden; }
+#jqContextMenu li { border-radius: 6px; font-size: 14px !important; padding: 7px 14px !important; }
+#jqContextMenu li:hover { background-color: #e8f1fa !important; }
+
+#uploadprogress { border-radius: 10px 10px 0 0; overflow: hidden; box-shadow: 0 6px 16px rgba(16, 24, 40, .16); }
+
+@media only screen and (max-width: 800px) {
+    #hapPathBar { position: static; margin-top: 40px; margin-left: 0 !important; }
+    #MyFiles { padding-top: 0; }
+    #pathCrumbs a, #pathCrumbs span { max-width: 140px; }
+}
+@media only screen and (max-width: 550px) {
+    #hapPathBar { margin-top: 80px; }
+    #MyFiles { padding-top: 0; padding-right: 8px; }
+    #MyFiles:not(.details):not(.small):not(.medium):not(.large) > a { width: calc(100% - 22px); }
+}

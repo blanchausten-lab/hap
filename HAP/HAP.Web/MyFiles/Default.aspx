@@ -18,7 +18,7 @@
 			<a class="dropdown" id="view" href="#"><hap:LocalResource runat="server" StringPath="myfiles/view" /></a>
 		</div>
 		<div style="float: left;">
-			<a href="#" id="backup"><span></span></a>
+			<a href="#" id="backup" title="Back" aria-label="Back"><span></span></a>
 		</div>
 		<div id="maintools">
 			<input type="text" id="newfoldertext" /><a id="newfolder" href="#"  title="<%=Localize("myfiles/newfolder") %>"><hap:LocalResource runat="server" StringPath="myfiles/newfolder" /></a>
@@ -145,6 +145,10 @@
 	</div>
 	<div id="Tree" class="tile-border-color">
 	</div>
+	<nav id="hapPathBar" aria-label="Folder path" style="display: none;">
+		<a href="#" id="pathUp" title="Go up one folder (Backspace or Alt+Up)"><span class="pathup-icon" aria-hidden="true">&#8593;</span> Up</a>
+		<ol id="pathCrumbs"></ol>
+	</nav>
 	<div id="MyFilesHeaddings">
 		<a class="name" href="javascript:void(Load('Default', Sortorder == 'Default' ? (Sortdirection == 1 ? 2 : 1) : 1));"><hap:LocalResource runat="server" StringPath="name" /></a><a class="modified" href="javascript:void(Load('UnderlyingModified', Sortorder == 'UnderlyingModified' ? (Sortdirection == 1 ? 2 : 1) : 1));"><hap:LocalResource runat="server" StringPath="myfiles/modified" /></a><a class="type" href="javascript:void(Load('Type', Sortorder == 'Type' ? (Sortdirection == 1 ? 2 : 1) : 1));"><hap:LocalResource runat="server" StringPath="myfiles/type" /></a><a class="extension" href="javascript:void(Load('Extension', Sortorder == 'Extension' ? (Sortdirection == 1 ? 2 : 1) : 1));"><hap:LocalResource runat="server" StringPath="myfiles/extension" /></a><a href="javascript:void(Load('UnderlyingSize', Sortorder == 'UnderlyingSize' ? (Sortdirection == 1 ? 2 : 1) : 1));" class="size"><hap:LocalResource runat="server" StringPath="myfiles/size" /></a></div>
 	<div id="MyFiles" class="tiles" data-role="content">
@@ -161,6 +165,59 @@
 		var lazytimer = null;
 		var temp, clipboard, table, curitem, curpath, Sortorder, Sortdirection = null;
 		var uploads = new Array();
+		var driveNames = {};
+		try { driveNames = JSON.parse(window.sessionStorage.getItem("hapDriveNames")) || {}; } catch (e) { driveNames = {}; }
+		var driveNamesRequested = false;
+		// Splits a HAP path such as "H\Folder 1\Folder 2" into its parts
+		function PathSegments(p) {
+			var parts = (p || "").split(/\\|\/|%5C/i), segs = [];
+			for (var i = 0; i < parts.length; i++) if (parts[i] != "") segs.push(parts[i]);
+			return segs;
+		}
+		// Path segments are URL encoded with | in place of %
+		function DecodeSegment(s) {
+			try { return decodeURIComponent(s.replace(/\|([0-9a-f]{2})/gi, "%$1")); } catch (e) { return s; }
+		}
+		// Path of the folder above the current one ("" is the list of drives)
+		function ParentPath() {
+			var segs = PathSegments(curpath);
+			if (segs.length <= 1) return "";
+			if (segs.length == 2) return segs[0] + "\\";
+			return segs.slice(0, segs.length - 1).join("\\");
+		}
+		function GoUp() {
+			if (curpath == null) return;
+			window.location.href = "#" + ParentPath();
+		}
+		function RenderPath() {
+			var bar = $("#hapPathBar"), list = $("#pathCrumbs").empty();
+			if (curpath == null) { bar.hide(); return; }
+			var segs = PathSegments(curpath);
+			list.append($('<li/>').append($('<a href="#"/>').text(hap.common.getLocal("myfiles/mydrives") || "My Drives")));
+			var href = "";
+			for (var i = 0; i < segs.length; i++) {
+				if (i == 0) href = segs[0] + "\\";
+				else if (i == 1) href = href + segs[i];
+				else href = href + "\\" + segs[i];
+				var text = i == 0 ? (driveNames[segs[0].toUpperCase()] || segs[0].toUpperCase() + ":") : DecodeSegment(segs[i]);
+				var li = $('<li/>');
+				if (i == segs.length - 1) li.append($('<span aria-current="page"/>').text(text));
+				else li.append($('<a/>').attr("href", "#" + href).text(text));
+				list.append(li);
+			}
+			$("#pathUp").attr("href", "#" + ParentPath());
+			bar.show();
+			$(window).trigger("resize");
+			if (!driveNames[(segs[0] || "").toUpperCase()] && !driveNamesRequested) {
+				driveNamesRequested = true;
+				$.ajax({ type: 'GET', url: hap.common.formatJSONUrl('~/api/MyFiles/Drives'), dataType: 'json', contentType: 'application/json;',
+					success: function (data) { SaveDriveNames(data); RenderPath(); } });
+			}
+		}
+		function SaveDriveNames(data) {
+			for (var i = 0; i < data.length; i++) driveNames[data[i].Path.substr(0, 1).toUpperCase()] = data[i].Name;
+			try { window.sessionStorage.setItem("hapDriveNames", JSON.stringify(driveNames)); } catch (e) { }
+		}
 		$(window).hashchange(function () {
 			$("#filter").val(hap.common.getLocal("search"));
 			if (window.location.href.split('#')[1] != "" && window.location.href.split('#')[1]) {
@@ -181,6 +238,7 @@
 				$("#MyFiles").removeClass("details").removeClass("small").removeClass("medium").removeClass("large");
 				$("#MyFilesHeaddings").hide();
 			}
+			RenderPath();
 			Load();
 		});
 	    function Zip(zipfile, index) {
@@ -1099,6 +1157,7 @@
 					contentType: 'application/json;',
 					success: function (data) {
 						items = new Array();
+						SaveDriveNames(data);
 						$("#MyFiles").html("").addClass("drives");
 						$(window).trigger("resize");
 						for (var i = 0; i < data.length; i++)
@@ -1188,6 +1247,8 @@
 		        $("#Tree").css("top", $("#search").position().top + $("#search").height()).css("height", $("#hapContent").height() - $("#search").height()); 
 		        $("#MyFiles").css("min-height", parseInt($("#hapContent").css("min-height").replace(/px/g, "")) - 2); 
 		        $("#Views,#directedit").css("left", $('#view').position().left);
+		        $("#hapPathBar").css("margin-left", $("#Tree").is(":visible") ? $("#Tree").width() + 5 : 0);
+		        $("#MyFilesHeaddings").css("top", $("#hapHeader").position().top + $("#hapHeader").height() + ($("#hapPathBar").is(":visible") ? $("#hapPathBar").outerHeight() : 0));
 		    });
 		    if (navigator.appVersion.indexOf("Win") == -1) {
 		        $("#de").remove();
@@ -1625,12 +1686,17 @@
 		    $("#search input").focus(function () { if ($(this).val().match(hap.common.getLocal("search"))) $(this).val(""); }).blur(function () { if ($(this).val() == "") $(this).val(hap.common.getLocal("search") + ": " + curitem.Name); });
 		    $(window).trigger("resize");
 			$("#MyFiles").css("margin-left", $("#Tree").width() + 5);
-			$("#MyFilesHeaddings").css("margin-left", $("#Tree").width() + 5).css("top", $("#hapHeader").position().top + $("#hapHeader").height());
+			$("#MyFilesHeaddings").css("margin-left", $("#Tree").width() + 5);
 			$(window).trigger("hashchange");
 		});
 	    $(document).bind('keydown', function (event) { 
 	        var keycode = (event.keyCode ? event.keyCode : (event.which ? event.which : event.charCode)); 
 	        keys.shift = (keycode == 16); keys.ctrl = (keycode == 17); 
+	        if (curpath != null && !$("input, textarea, select").is(":focus") && $(".ui-dialog:visible, .hapPopup").length == 0 && (keycode == 8 || (event.altKey && keycode == 38))) {
+	            event.preventDefault();
+	            GoUp();
+	            return;
+	        }
 	        if (keycode == 46 && SelectedItems().length > 0 && !$("input").is(":focus")) { 
 	            event.preventDefault();
 	            $("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/delete/deletingitem1") + " 1 " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items") });

@@ -1,0 +1,83 @@
+/*
+    Home Access Plus+ - modern look
+    Loaded after basestyle.css. Softens the original square "Metro" blocks:
+    rounded corners, light borders and shadows, more spacing and larger text.
+    Delete the <link> to this file in masterpage.master to return to the old look.
+*/
+:root {
+    --hap-accent: #0060a6;
+    --hap-accent-hover: #0b6fb8;
+    --hap-accent-dark: #004577;
+    --hap-accent-soft: #e8f1fa;
+    --hap-accent-softer: #f2f7fc;
+    --hap-bg: #f4f6f9;
+    --hap-surface: #ffffff;
+    --hap-border: #dde3ea;
+    --hap-text: #1f2933;
+    --hap-text-muted: #5f6b7a;
+    --hap-radius: 10px;
+    --hap-radius-small: 6px;
+    --hap-shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 1px 3px rgba(16, 24, 40, .08);
+    --hap-shadow-raised: 0 4px 12px rgba(16, 24, 40, .12);
+}
+
+#form1, #hapContent, .ui-widget, .hapPopup { font-size: 14px; color: var(--hap-text); }
+#hapContent, #logincontainer, #hapHomeContainer { background: var(--hap-bg); }
+
+/* Header bar */
+#hapHeader { box-shadow: 0 2px 6px rgba(0, 0, 0, .15); }
+#hapHeader a { border-radius: var(--hap-radius-small); height: 32px; line-height: 32px; margin-top: 4px; }
+#hapHeader #hapTitle:hover { background-color: transparent; }
+#hapHeader a:hover, #hapUserTitle:hover { background-color: rgba(255, 255, 255, .16); }
+#hapHeader a:active, #hapUserTitle:active { background-color: rgba(0, 0, 0, .18); }
+#hapUserTitle { border-radius: var(--hap-radius-small); height: 32px; line-height: 32px; top: 4px; right: 10px; border-right: 0; }
+
+/* Drop-down menus */
+.hapmenu { border: 1px solid var(--hap-border) !important; border-radius: 0 0 var(--hap-radius) var(--hap-radius); box-shadow: var(--hap-shadow-raised); overflow: hidden; }
+.hapmenu a { border-radius: var(--hap-radius-small); margin: 2px 6px; }
+.hapmenu a:hover { background-color: var(--hap-accent-soft); }
+#hapUserMenu { border-radius: var(--hap-radius); margin-top: 4px; padding: 10px; }
+#hapUserMenu .mypic { border-radius: var(--hap-radius); }
+
+/* Form fields */
+input[type=password], input[type=text], input[type=time], input[type=date], input[type=email], textarea {
+    border: 1px solid #c3cbd5; border-radius: var(--hap-radius-small); padding: 6px 10px; font-family: inherit;
+    background: #fff; color: var(--hap-text); box-sizing: border-box; transition: border-color .15s, box-shadow .15s;
+}
+input[type=password]:hover, input[type=text]:hover, input[type=time]:hover, input[type=date]:hover, input[type=email]:hover, textarea:hover { border: 1px solid #93a1b2; }
+input[type=password]:focus, input[type=text]:focus, input[type=time]:focus, input[type=date]:focus, input[type=email]:focus, textarea:focus,
+input[type=password]:active, input[type=time]:active, input[type=date]:active {
+    border: 1px solid var(--hap-accent); box-shadow: 0 0 0 3px rgba(0, 96, 166, .2); outline: none;
+}
+input[type=button]:focus, input[type=submit]:focus, button:focus, a:focus-visible { outline: 2px solid var(--hap-accent); outline-offset: 2px; }
+
+/* jQuery UI buttons, dialogs and tabs */
+.ui-button, .ui-corner-all, .ui-corner-top, .ui-corner-bottom, .ui-corner-left, .ui-corner-right { border-radius: var(--hap-radius-small) !important; }
+.ui-dialog { border-radius: var(--hap-radius) !important; box-shadow: var(--hap-shadow-raised); border: 1px solid var(--hap-border) !important; padding: 0 !important; overflow: hidden; }
+.ui-dialog .ui-dialog-titlebar { border-radius: 0 !important; border: 0 !important; padding: 10px 14px !important; }
+
+/* Pop-ups */
+.hapPopup { background: rgba(15, 23, 42, .45); }
+.hapPopup-wrapper { border-radius: var(--hap-radius); box-shadow: var(--hap-shadow-raised); max-width: 990px; margin: 0 auto; }
+
+/* Home page tiles */
+#HomeButtons .tile { border-radius: var(--hap-radius); margin: 5px 5px 0 0; box-shadow: var(--hap-shadow); transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease; }
+#HomeButtons .tile:hover { transform: translateY(-2px); box-shadow: var(--hap-shadow-raised); }
+#HomeButtons .tile:active { transform: none; }
+#HomeButtons .selected { border-radius: var(--hap-radius); }
+.tiles > a:hover, .tiles a.tile:hover { background-color: var(--hap-accent-hover); border-color: var(--hap-accent-hover); }
+#HomeButtonsHeader h1 { font-size: 1.7em; }
+h1.Announcement { border-radius: var(--hap-radius); border: 1px solid #f1d64b; margin: 10px 0; padding: 10px 14px; }
+
+/* "More" panel from the header */
+#hapHeaderMore .tiles div div a { border-radius: var(--hap-radius); }
+
+/* Login page */
+#loginform h1 { font-weight: 300; }
+#loginform h2 { color: var(--hap-text-muted); font-weight: 300; }
+#loginform input[type=text], #loginform input[type=password] { width: 100% !important; max-width: 360px; font-size: 18px; padding: 10px 12px; }
+#loginform label { font-size: 1em; margin-bottom: 4px; color: var(--hap-text-muted); }
+#loginform .submit a { border-radius: var(--hap-radius-small); }
+
+/* Progress bars */
+#tab_me_progress { border-radius: 999px; border-color: var(--hap-border); }
