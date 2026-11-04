@@ -165,6 +165,9 @@
 		var lazytimer = null;
 		var temp, clipboard, table, curitem, curpath, Sortorder, Sortdirection = null;
 		var uploads = new Array();
+		// How long (ms) the second click of a double click can take. Longer than the
+		// Windows default (500ms) so files and folders are easier to open.
+		var DoubleClickTime = 900;
 		var driveNames = {};
 		try { driveNames = JSON.parse(window.sessionStorage.getItem("hapDriveNames")) || {}; } catch (e) { driveNames = {}; }
 		var driveNamesRequested = false;
@@ -786,7 +789,7 @@
 						}
 					};
 				}
-				$("#" + this.Id).bind("click", this.Click).bind("dblclick", this.DoubleClick).contextMenu('contextMenu', {
+				$("#" + this.Id).bind("click", this.Click).contextMenu('contextMenu', {
 					onContextMenu: function (e) {
 						var element = $(e.target);
 						if (!element.is("a")) element = element.parent("a");
@@ -1112,7 +1115,7 @@
 				for (var x = 0; x < items.length; x++) if (items[x].Id == $(this).attr("id")) item = items[x];
 				clearTimeout(item.ClickTimer);
 				item.Clicks++;
-				item.ClickTimer = setTimeout("for (var x = 0; x < items.length; x++) if (items[x].Id == '" + item.Id + "') items[x].Clicks = 0;", 500);
+				item.ClickTimer = setTimeout(function () { item.Clicks = 0; }, DoubleClickTime);
 				if (item.Clicks == 1) {
 					var i = -1, z = -1;
 					for (var x = 0; x < items.length; x++) {
@@ -1132,7 +1135,10 @@
 					item.Refresh();
 					RefreshToolbar();
 				} else {
-
+					// Second click within DoubleClickTime opens the item
+					item.Clicks = 0;
+					clearTimeout(item.ClickTimer);
+					item.DoubleClick.call(this, e);
 				}
 				return false;
 			};
