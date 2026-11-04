@@ -744,11 +744,8 @@
 					for (var x = 0; x < items.length; x++) if (items[x].Id == $(this).attr("id")) item = items[x];
 					var s = "";
 					for (var i = 0; i < SelectedItems().length; i++) s += SelectedItems()[i].Data.Name + "\n";
-					$("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/" + ((keys.ctrl) ? "copy/copying" : "move/moving")) + " 1 " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items") });
-					$("#progressstatus .progress").progressbar({ value: (1 / SelectedItems().length) * 100 });
-					if (keys.ctrl) Copy(0, item.Data.Path);
-					else if (confirm(hap.common.getLocal("myfiles/move/question1") + "\n\n" + s)) Move(0, item.Data.Path);
-					else $("#progressstatus").dialog("close");
+					if (keys.ctrl) { $("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/" + ((keys.ctrl) ? "copy/copying" : "move/moving")) + " 1 " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items") }); $("#progressstatus .progress").progressbar({ value: (1 / SelectedItems().length) * 100 }); Copy(0, item.Data.Path); }
+					else if (confirm(hap.common.getLocal("myfiles/move/question1") + "\n\n" + s)) { $("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/" + ((keys.ctrl) ? "copy/copying" : "move/moving")) + " 1 " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items") }); $("#progressstatus .progress").progressbar({ value: (1 / SelectedItems().length) * 100 }); Move(0, item.Data.Path); }
 					keys.ctrl = keys.shift = false;
 				}, over: function (event, ui) {
 					var item = null;
@@ -877,12 +874,9 @@
 							}
 						},
 						'con-delete': function (t) {
-							$("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/delete/deletingitem1") + " 1 " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items") });
-							$("#progressstatus .progress").progressbar({ value: (1 / SelectedItems().length) * 100 });
 							var s = "";
 							for (var i = 0; i < SelectedItems().length; i++) s += SelectedItems()[i].Data.Name + "\n";
-							if (confirm(hap.common.getLocal("myfiles/delete/question1") + "\n\n" + s)) Delete(0);
-							else $("#progressstatus").dialog("close");
+							if (confirm(hap.common.getLocal("myfiles/delete/question1") + "\n\n" + s)) { $("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/delete/deletingitem1") + " 1 " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items") }); $("#progressstatus .progress").progressbar({ value: (1 / SelectedItems().length) * 100 }); Delete(0); }
 						},
 						'con-rename': function (t) {
 						    if (SelectedItems().length > 1) {
@@ -1253,6 +1247,12 @@
 		    if (navigator.appVersion.indexOf("Win") == -1) {
 		        $("#de").remove();
 		    }
+		    // Progress boxes only fade in if the action takes a while, so quick actions don't flash the screen
+		    $(document).on("dialogopen", "#progressstatus, #loadingbox", function () {
+		        var d = $(this).dialog("instance");
+		        $(this).closest(".ui-dialog").removeClass("hap-delayed").addClass("hap-delayed");
+		        if (d && d.overlay) d.overlay.addClass("hap-delayed");
+		    });
 		    $("#properties").dialog({ autoOpen: false });
 		    $("#loadingbox").dialog({ autoOpen: false });
 			$("#preview").dialog({ autoOpen: false });
@@ -1304,11 +1304,8 @@
 								for (var x = 0; x < items.length; x++) if (items[x].Id == $(this).attr("id")) item = items[x];
 								var s = "";
 								for (var i = 0; i < SelectedItems().length; i++) s += SelectedItems()[i].Data.Name + "\n";
-								$("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/" + ((keys.ctrl) ? "copy/copying" : "move/moving")) + " 1 " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items") });
-								$("#progressstatus .progress").progressbar({ value: (1 / SelectedItems().length) * 100 });
-								if (keys.ctrl) Copy(0, $(this).attr("href").substr(1));
-								else if (confirm(hap.common.getLocal("myfiles/move/question1") + "\n\n" + s)) Move(0, $(this).attr("href").substr(1));
-								else $("#progressstatus").dialog("close");
+								if (keys.ctrl) { $("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/" + ((keys.ctrl) ? "copy/copying" : "move/moving")) + " 1 " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items") }); $("#progressstatus .progress").progressbar({ value: (1 / SelectedItems().length) * 100 }); Copy(0, $(this).attr("href").substr(1)); }
+								else if (confirm(hap.common.getLocal("myfiles/move/question1") + "\n\n" + s)) { $("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/" + ((keys.ctrl) ? "copy/copying" : "move/moving")) + " 1 " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items") }); $("#progressstatus .progress").progressbar({ value: (1 / SelectedItems().length) * 100 }); Move(0, $(this).attr("href").substr(1)); }
 
 							}, over: function (event, ui) {
 								$("#dragobject span").text(hap.common.getLocal("myfiles/" + ((keys.ctrl) ? "copy/copy" : "move/move")) + " " + hap.common.getLocal("to") + " " + $(this).text()).show();
@@ -1429,11 +1426,8 @@
 			$("#toolbar-paste").animate({ width: 0 }, { duration: 500, complete: function() { $("#toolbar-paste-container").hide(); $("#toolbar-paste").css("display", "none") } }).click(function () {
 				var s = "";
 				for (var i = 0; i < clipboard.items.length; i++) s += clipboard.items[i].Data.Name + "\n";
-				$("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/" + ((clipboard.mode == 'copy') ? "copy/copying" : "move/moving")) + " 1 " + hap.common.getLocal("of") + " " + clipboard.items.length + " " + hap.common.getLocal("items") });
-				$("#progressstatus .progress").progressbar({ value: (1 / clipboard.items.length) * 100 });
-				if (clipboard.mode == 'copy') CopyClipboard(0, (curpath.length == 2 ? curitem.Location.substr(0, curitem.Location.length -1 ) : curitem.Location).replace(/:/g, ""));
-				else if (confirm(hap.common.getLocal("myfiles/move/question1") + "\n\n" + s)) MoveClipboard(0, (curpath.length == 2 ? curitem.Location.substr(0, curitem.Location.length -1 ) : curitem.Location).replace(/:/g, ""));
-				else $("#progressstatus").dialog("close");
+				if (clipboard.mode == 'copy') { $("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/" + ((clipboard.mode == 'copy') ? "copy/copying" : "move/moving")) + " 1 " + hap.common.getLocal("of") + " " + clipboard.items.length + " " + hap.common.getLocal("items") }); $("#progressstatus .progress").progressbar({ value: (1 / clipboard.items.length) * 100 }); CopyClipboard(0, (curpath.length == 2 ? curitem.Location.substr(0, curitem.Location.length -1 ) : curitem.Location).replace(/:/g, "")); }
+				else if (confirm(hap.common.getLocal("myfiles/move/question1") + "\n\n" + s)) { $("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/" + ((clipboard.mode == 'copy') ? "copy/copying" : "move/moving")) + " 1 " + hap.common.getLocal("of") + " " + clipboard.items.length + " " + hap.common.getLocal("items") }); $("#progressstatus .progress").progressbar({ value: (1 / clipboard.items.length) * 100 }); MoveClipboard(0, (curpath.length == 2 ? curitem.Location.substr(0, curitem.Location.length -1 ) : curitem.Location).replace(/:/g, "")); }
 				return false;
 			});
 			$("#toolbar-unzip").animate({ width: 0 }, { duration: 500, complete: function() { $("#toolbar-unzip").css("display", "none") } }).click(function () {
@@ -1524,12 +1518,9 @@
 				return false;
 			});
 			$("#toolbar-delete").animate({ width: 0 }, { duration: 500, complete: function() { $("#toolbar-delete").css("display", "none") } }).click(function () {
-				$("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/delete/deletingitem1") + " 1 " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items") });
-				$("#progressstatus .progress").progressbar({ value: (1 / SelectedItems().length) * 100 });
 				var s = "";
 				for (var i = 0; i < SelectedItems().length; i++) s += SelectedItems()[i].Data.Name + "\n";
-				if (confirm(hap.common.getLocal("myfiles/delete/question1") + "\n\n" + s)) Delete(0);
-				else $("#progressstatus").dialog("close");
+				if (confirm(hap.common.getLocal("myfiles/delete/question1") + "\n\n" + s)) { $("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/delete/deletingitem1") + " 1 " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items") }); $("#progressstatus .progress").progressbar({ value: (1 / SelectedItems().length) * 100 }); Delete(0); }
 				return false;
 			});
 			$("#renamebox").focusout(function() {
@@ -1699,12 +1690,9 @@
 	        }
 	        if (keycode == 46 && SelectedItems().length > 0 && !$("input").is(":focus")) { 
 	            event.preventDefault();
-	            $("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/delete/deletingitem1") + " 1 " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items") });
-	            $("#progressstatus .progress").progressbar({ value: (1 / SelectedItems().length) * 100 });
 	            var s = "";
 	            for (var i = 0; i < SelectedItems().length; i++) s += SelectedItems()[i].Data.Name + "\n";
-	            if (confirm(hap.common.getLocal("myfiles/delete/question1") + "\n\n" + s)) Delete(0);
-	            else $("#progressstatus").dialog("close");
+	            if (confirm(hap.common.getLocal("myfiles/delete/question1") + "\n\n" + s)) { $("#progressstatus").dialog({ autoOpen: true, modal: true, title: hap.common.getLocal("myfiles/delete/deletingitem1") + " 1 " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items") }); $("#progressstatus .progress").progressbar({ value: (1 / SelectedItems().length) * 100 }); Delete(0); }
 	        }
 	    });
 	    $(document).bind('keyup', function (event) { keys.shift = keys.ctrl = false; });

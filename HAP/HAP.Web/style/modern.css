@@ -81,3 +81,10 @@ h1.Announcement { border-radius: var(--hap-radius); border: 1px solid #f1d64b; m
 
 /* Progress bars */
 #tab_me_progress { border-radius: 999px; border-color: var(--hap-border); }
+
+/* Progress boxes and their dimmed background fade in only after a short wait,
+   so actions that finish quickly don't make the screen flash */
+.hap-delayed { -webkit-animation: hapDelayedShow .2s ease .45s both; animation: hapDelayedShow .2s ease .45s both; }
+@-webkit-keyframes hapDelayedShow { from { opacity: 0; visibility: hidden; } }
+@keyframes hapDelayedShow { from { opacity: 0; visibility: hidden; } }
+.ui-widget-overlay { background: #0f172a; opacity: .18; filter: Alpha(Opacity=18); }
