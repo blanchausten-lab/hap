@@ -1,4 +1,5 @@
 ﻿<%@ Page Title="" Language="C#" MasterPageFile="~/masterpage.master" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="HAP.Web.MyFiles.Default" %>
+<asp:Content runat="server" ContentPlaceHolderID="viewport"><meta name="viewport" content="width=device-width, initial-scale=1.0" /></asp:Content>
 <asp:Content ContentPlaceHolderID="head" runat="server">
 	<script src="../Scripts/jquery.ba-hashchange.min.js" type="text/javascript"></script>
 	<script src="../Scripts/jquery.dynatree.js" type="text/javascript"></script>
@@ -258,7 +259,7 @@
 	                $("#progressstatus").dialog("option", "title", hap.common.getLocal("myfiles/zip/zipingitem1") + " " + (temp.Index + 1) + " " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items"));
 	                $("#progressstatus .progress").progressbar({ value: (temp.Index / SelectedItems().length) * 100 });
 	                if (temp.Index < SelectedItems().length) Zip(temp.File, temp.Index);
-	                else { temp = null; Load(); setTimeout(function() { $("#progressstatus").dialog("close"); }, 500); }
+	                else { temp = null; Load(); $("#progressstatus").dialog("close"); }
 	            },
 	            error: hap.common.jsonError
 	        });
@@ -279,7 +280,7 @@
 					$("#progressstatus .progress").progressbar({ value: 80 });
 					temp = null; 
 					Load(); 
-					setTimeout(function() { $("#progressstatus").dialog("close"); }, 500);
+					$("#progressstatus").dialog("close");
 				},
 				error: function (xhr, ajaxOptions, thrownError) {
 				    if (jQuery.parseJSON(xhr.responseText).Message == "Destination Folder Exists")
@@ -291,7 +292,7 @@
 							$("#progressstatus .progress").progressbar({ value: 50 });
 							temp = null; 
 							Load(); 
-							setTimeout(function() { $("#progressstatus").dialog("close"); }, 500);
+							$("#progressstatus").dialog("close");
 						}
 					}
 				    else if (jQuery.parseJSON(xhr.responseText).Message == "File Exists in Destination")
@@ -303,7 +304,7 @@
 							$("#progressstatus .progress").progressbar({ value: 50 });
 							temp = null; 
 							Load(); 
-							setTimeout(function() { $("#progressstatus").dialog("close"); }, 500);
+							$("#progressstatus").dialog("close");
 						}
 					}
 					else if (confirm(hap.common.getLocal("myfiles/unzip/error1") + " " + SelectedItems()[0].Data.Name + ", " + hap.common.getLocal("myfiles/unzip/error2") + "\n\n" + hap.common.getLocal("errordetails") + ":\n\n" + xhr.responseXML.documentElement.children[1].children[0].textContent)) {
@@ -311,14 +312,14 @@
 						$("#progressstatus .progress").progressbar({ value: 50 });
 						temp = null; 
 						Load(); 
-						setTimeout(function() { $("#progressstatus").dialog("close"); }, 500);
+						$("#progressstatus").dialog("close");
 					} else { 
 					    hap.common.jsonError(xhr, ajaxOptions, thrownError);
 						$("#progressstatus").dialog("option", "title", hap.common.getLocal("myfiles/unzip/unzipping") + " " + SelectedItems()[0].Data.Name);
 						$("#progressstatus .progress").progressbar({ value: 50 });
 						temp = null; 
 						Load(); 
-						setTimeout(function() { $("#progressstatus").dialog("close"); }, 500);
+						$("#progressstatus").dialog("close");
 					}
 				}
 			});
@@ -337,7 +338,7 @@
 					$("#progressstatus").dialog("option", "title", hap.common.getLocal("myfiles/copy/copyingitem1") + " " + (temp.index + 1) + " " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items"));
 					$("#progressstatus .progress").progressbar({ value: (temp.index / SelectedItems().length) * 100 });
 					if (temp.index < SelectedItems().length) Copy(temp.index, temp.target);
-					else { temp = null; Load(); setTimeout(function() { $("#progressstatus").dialog("close"); }, 500); }
+					else { temp = null; Load(); $("#progressstatus").dialog("close"); }
 				},
 				error: function (xhr, ajaxOptions, thrownError) {
 					if (jQuery.parseJSON(xhr.responseText).Message == "Destination Folder Exists")
@@ -349,7 +350,7 @@
 							$("#progressstatus").dialog("option", "title", hap.common.getLocal("myfiles/copy/copyingitem1") + " " + (temp.index + 1) + " " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items"));
 							$("#progressstatus .progress").progressbar({ value: (temp.index / SelectedItems().length) * 100 });
 							if (temp.index < SelectedItems().length) Copy(temp.index, temp.target);
-							else { temp = null; Load(); setTimeout(function() { $("#progressstatus").dialog("close"); }, 500); }
+							else { temp = null; Load(); $("#progressstatus").dialog("close"); }
 						}
 					}
 					else if (jQuery.parseJSON(xhr.responseText).Message == "File Exists in Destination")
@@ -361,7 +362,7 @@
 							$("#progressstatus").dialog("option", "title", hap.common.getLocal("myfiles/copy/copyingitem1") + " " + (temp.index + 1) + " " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items"));
 							$("#progressstatus .progress").progressbar({ value: (temp.index / SelectedItems().length) * 100 });
 							if (temp.index < SelectedItems().length) Copy(temp.index, temp.target);
-							else { temp = null; Load(); setTimeout(function() { $("#progressstatus").dialog("close"); }, 500); }
+							else { temp = null; Load(); $("#progressstatus").dialog("close"); }
 						}
 					}
 					else if (confirm(hap.common.getLocal("myfiles/copy/error1") + " " + SelectedItems()[temp.index].Data.Name + ", " + hap.common.getLocal("myfiles/copy/error2") + "\n\n" + hap.common.getLocal("errordetails") + ":\n\n" + jQuery.parseJSON(xhr.responseText).Message)) {
@@ -369,8 +370,8 @@
 						$("#progressstatus").dialog("option", "title", hap.common.getLocal("myfiles/copy/copyingitem1") + " " + (temp.index + 1) + " " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items"));
 						$("#progressstatus .progress").progressbar({ value: (temp.index / SelectedItems().length) * 100 });
 						if (temp.index < SelectedItems().length) Copy(temp.index, temp.target);
-						else { temp = null; Load(); setTimeout(function() { $("#progressstatus").dialog("close"); }, 500); }
-					} else { hap.common.jsonError(xhr, ajaxOptions, thrownError); temp = null; Load(); setTimeout(function() { $("#progressstatus").dialog("close"); }, 500); }
+						else { temp = null; Load(); $("#progressstatus").dialog("close"); }
+					} else { hap.common.jsonError(xhr, ajaxOptions, thrownError); temp = null; Load(); $("#progressstatus").dialog("close"); }
 				}
 			});
 		}
@@ -389,7 +390,7 @@
 					$("#progressstatus").dialog("option", "title", hap.common.getLocal("myfiles/copy/copyingitem1") + " " + (temp.index + 1) + " " + hap.common.getLocal("of") + " " + clipboard.items.length + " " + hap.common.getLocal("items"));
 					$("#progressstatus .progress").progressbar({ value: (temp.index / clipboard.items.length) * 100 });
 					if (temp.index < clipboard.items.length) CopyClipboard(temp.index, temp.target);
-					else { clipboard = null; temp = null; Load(); setTimeout(function() { $("#progressstatus").dialog("close"); }, 500); }
+					else { clipboard = null; temp = null; Load(); $("#progressstatus").dialog("close"); }
 				},
 				error: function (xhr, ajaxOptions, thrownError) {
 				    if (jQuery.parseJSON(xhr.responseText).Message == "Destination Folder Exists")
@@ -401,7 +402,7 @@
 				            $("#progressstatus").dialog("option", "title", hap.common.getLocal("myfiles/copy/copyingitem1") + " " + (temp.index + 1) + " " + hap.common.getLocal("of") + " " + clipboard.items.length + " " + hap.common.getLocal("items"));
 				            $("#progressstatus .progress").progressbar({ value: (temp.index / clipboard.items.length) * 100 });
 				            if (temp.index < clipboard.items.length) CopyClipboard(temp.index, temp.target);
-				            else { temp = null; Load(); setTimeout(function() { $("#progressstatus").dialog("close"); }, 500); }
+				            else { temp = null; Load(); $("#progressstatus").dialog("close"); }
 				        }
 				    }
 				    else if (jQuery.parseJSON(xhr.responseText).Message == "File Exists in Destination")
@@ -413,7 +414,7 @@
 				            $("#progressstatus").dialog("option", "title", hap.common.getLocal("myfiles/copy/copyingitem1") + " " + (temp.index + 1) + " " + hap.common.getLocal("of") + " " + clipboard.items.length + " " + hap.common.getLocal("items"));
 				            $("#progressstatus .progress").progressbar({ value: (temp.index / clipboard.items.length) * 100 });
 				            if (temp.index < clipboard.items.length) CopyClipboard(temp.index, temp.target);
-				            else { temp = null; Load(); setTimeout(function() { $("#progressstatus").dialog("close"); }, 500); }
+				            else { temp = null; Load(); $("#progressstatus").dialog("close"); }
 				        }
 				    }
 				    else if (confirm(hap.common.getLocal("myfiles/copy/error1") + " " + clipboard.items.Data.Name + ", " + hap.common.getLocal("myfiles/copy/error2") + "\n\n" + hap.common.getLocal("errordetails") + ":\n\n" + xhr.responseXML.documentElement.children[1].children[0].textContent)) {
@@ -421,8 +422,8 @@
 				        $("#progressstatus").dialog("option", "title", hap.common.getLocal("myfiles/copy/copyingitem1") + " " + (temp.index + 1) + " " + hap.common.getLocal("of") + " " + clipboard.items.length + " " + hap.common.getLocal("items"));
 				        $("#progressstatus .progress").progressbar({ value: (temp.index / clipboard.items.length) * 100 });
 				        if (temp.index < clipboard.items.length) CopyClipboard(temp.index, temp.target);
-				        else { clipboard = null; temp = null; Load(); setTimeout(function() { $("#progressstatus").dialog("close"); }, 500); }
-				    } else { hap.common.jsonError(xhr, ajaxOptions, thrownError); clipboard = null; temp = null; Load(); setTimeout(function() { $("#progressstatus").dialog("close"); }, 500); }
+				        else { clipboard = null; temp = null; Load(); $("#progressstatus").dialog("close"); }
+				    } else { hap.common.jsonError(xhr, ajaxOptions, thrownError); clipboard = null; temp = null; Load(); $("#progressstatus").dialog("close"); }
 				}
 			});
 		}
@@ -441,7 +442,7 @@
 					$("#progressstatus").dialog("option", "title", hap.common.getLocal("myfiles/move/movingitem1") + " " + (temp.index + 1) + " " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items"));
 					$("#progressstatus .progress").progressbar({ value: (temp.index / SelectedItems().length) * 100 });
 					if (temp.index < SelectedItems().length) Move(temp.index, temp.target);
-					else { temp = null; Load(); setTimeout(function() { $("#progressstatus").dialog("close"); }, 500); }
+					else { temp = null; Load(); $("#progressstatus").dialog("close"); }
 				},
 				error: function (xhr, ajaxOptions, thrownError) {
 				    if (jQuery.parseJSON(xhr.responseText).Message == "Destination Folder Exists")
@@ -453,7 +454,7 @@
 				                $("#progressstatus").dialog("option", "title", hap.common.getLocal("myfiles/copy/copyingitem1") + " " + (temp.index + 1) + " " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items"));
 				                $("#progressstatus .progress").progressbar({ value: (temp.index / SelectedItems().length) * 100 });
 				                if (temp.index < SelectedItems().length) Move(temp.index, temp.target);
-				                else { temp = null; Load(); setTimeout(function() { $("#progressstatus").dialog("close"); }, 500); }
+				                else { temp = null; Load(); $("#progressstatus").dialog("close"); }
 				            }
 				        }
 				    else if (jQuery.parseJSON(xhr.responseText).Message == "File Exists in Destination")
@@ -465,7 +466,7 @@
 				                $("#progressstatus").dialog("option", "title", hap.common.getLocal("myfiles/copy/copyingitem1") + " " + (temp.index + 1) + " " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items"));
 				                $("#progressstatus .progress").progressbar({ value: (temp.index / SelectedItems().length) * 100 });
 				                if (temp.index < SelectedItems().length) Move(temp.index, temp.target);
-				                else { temp = null; Load(); setTimeout(function() { $("#progressstatus").dialog("close"); }, 500); }
+				                else { temp = null; Load(); $("#progressstatus").dialog("close"); }
 				            }
 				        }
 				    else if (confirm(hap.common.getLocal("myfiles/move/error1") + " " + SelectedItems()[temp.index].Data.Name + ", " + hap.common.getLocal("myfiles/move/error2") + "\n\n" + hap.common.getLocal("errordetails") + ":\n\n" + xhr.responseXML.documentElement.children[1].children[0].textContent)) {
@@ -473,8 +474,8 @@
 				        $("#progressstatus").dialog("option", "title", hap.common.getLocal("myfiles/move/movingitem1") + " " + (temp.index + 1) + " " + hap.common.getLocal("of") + " " + SelectedItems().length + " " + hap.common.getLocal("items"));
 				        $("#progressstatus .progress").progressbar({ value: (temp.index / SelectedItems().length) * 100 });
 				        if (temp.index < SelectedItems().length) Move(temp.index, temp.target);
-				        else { temp = null; Load(); setTimeout(function() { $("#progressstatus").dialog("close"); }, 500); }
-				    } else { hap.common.jsonError(xhr, ajaxOptions, thrownError); temp = null; Load(); setTimeout(function() { $("#progressstatus").dialog("close"); }, 500); }
+				        else { temp = null; Load(); $("#progressstatus").dialog("close"); }
+				    } else { hap.common.jsonError(xhr, ajaxOptions, thrownError); temp = null; Load(); $("#progressstatus").dialog("close"); }
 				}
 			});
 		}
@@ -493,7 +494,7 @@
 					$("#progressstatus").dialog("option", "title", hap.common.getLocal("myfiles/move/movingitem1") + " " + (temp.index + 1) + " " + hap.common.getLocal("of") + " " + clipboard.items.length + " " + hap.common.getLocal("items"));
 					$("#progressstatus .progress").progressbar({ value: (temp.index / clipboard.items.length) * 100 });
 					if (temp.index < clipboard.items.length) Move(temp.index, temp.target);
-					else { clipboard = null; temp = null; Load(); setTimeout(function() { $("#progressstatus").dialog("close"); }, 500); }
+					else { clipboard = null; temp = null; Load(); $("#progressstatus").dialog("close"); }
 				},
 				error: function (xhr, ajaxOptions, thrownError) {
 				    if (jQuery.parseJSON(xhr.responseText).Message == "Destination Folder Exists")
@@ -505,7 +506,7 @@
 							$("#progressstatus").dialog("option", "title", hap.common.getLocal("myfiles/move/movingitem1") + " " + (temp.index + 1) + " " + hap.common.getLocal("of") + " " + clipboard.items.length + " " + hap.common.getLocal("items"));
 							$("#progressstatus .progress").progressbar({ value: (temp.index / clipboard.items.length) * 100 });
 							if (temp.index < clipboard.items.length) MoveClipboard(temp.index, temp.target);
-							else { temp = null; Load(); setTimeout(function() { $("#progressstatus").dialog("close"); }, 500); }
+							else { temp = null; Load(); $("#progressstatus").dialog("close"); }
 						}
 					}
 				    else if (jQuery.parseJSON(xhr.responseText).Message == "File Exists in Destination")
@@ -517,7 +518,7 @@
 							$("#progressstatus").dialog("option", "title", hap.common.getLocal("myfiles/move/movingitem1") + " " + (temp.index + 1) + " " + hap.common.getLocal("of") + " " + clipboard.items.length + " " + hap.common.getLocal("items"));
 							$("#progressstatus .progress").progressbar({ value: (temp.index / clipboard.items.length) * 100 });
 							if (temp.index < clipboard.items.length) MoveClipboard(temp.index, temp.target);
-							else { temp = null; Load(); setTimeout(function() { $("#progressstatus").dialog("close"); }, 500); }
+							else { temp = null; Load(); $("#progressstatus").dialog("close"); }
 						}
 					}
 					else if (confirm(hap.common.getLocal("myfiles/move/error1") + " " + clipboard.items[temp.index].Data.Name + ", " + hap.common.getLocal("myfiles/move/error2") + "\n\n" + hap.common.getLocal("errordetails") + ":\n\n" + xhr.responseXML.documentElement.children[1].children[0].textContent)) {
@@ -525,8 +526,8 @@
 						$("#progressstatus").dialog("option", "title", hap.common.getLocal("myfiles/move/movingitem1") + " " + (temp.index + 1) + " " + hap.common.getLocal("of") + " " + clipboard.items.length + " " + hap.common.getLocal("items"));
 						$("#progressstatus .progress").progressbar({ value: (temp.index / clipboard.items.length) * 100 });
 						if (temp.index < clipboard.items.length) Move(temp.index, temp.target);
-						else { clipboard = null; temp = null; Load(); setTimeout(function() { $("#progressstatus").dialog("close"); }, 500); }
-					} else { hap.common.jsonError(xhr, ajaxOptions, thrownError); clipboard = null; temp = null; Load(); setTimeout(function() { $("#progressstatus").dialog("close"); }, 500); }
+						else { clipboard = null; temp = null; Load(); $("#progressstatus").dialog("close"); }
+					} else { hap.common.jsonError(xhr, ajaxOptions, thrownError); clipboard = null; temp = null; Load(); $("#progressstatus").dialog("close"); }
 				}
 			});
 		}
@@ -554,7 +555,7 @@
 					    $("#progressstatus .progress").progressbar({ value: (temp / SelectedItems().length) * 100 });
 					}
 					if (temp < SelectedItems().length) Delete(temp);
-					else { temp = null; Load(); setTimeout(function() { $("#progressstatus").dialog("close"); }, 500); }
+					else { temp = null; Load(); $("#progressstatus").dialog("close"); }
 				},
 				error: hap.common.jsonError
 			});
@@ -676,6 +677,7 @@
 			return val;
 		}
 		function RefreshToolbar() {
+			if (curitem == null) return; // left the folder before it finished loading
 			var cut, copy, paste, download, open, unzip, zip;
 			zip = cut = copy = del = open = SelectedItems().length > 0;
 			paste = curitem.Permissions.CreateFiles && clipboard != null;
@@ -1248,8 +1250,12 @@
 		        $("#MyFiles").css("min-height", parseInt($("#hapContent").css("min-height").replace(/px/g, "")) - 2); 
 		        $("#Views,#directedit").css("left", $('#view').position().left);
 		        $("#hapPathBar").css("margin-left", $("#Tree").is(":visible") ? $("#Tree").width() + 5 : 0);
+		        // On narrow screens the header wraps onto several lines, so sit the path bar just below it
+		        $("#hapPathBar").css("margin-top", $("#Tree").is(":visible") ? 0 : Math.max(0, $("#hapHeader").outerHeight() - parseInt($("#hapContent").css("padding-top"), 10)));
 		        $("#MyFilesHeaddings").css("top", $("#hapHeader").position().top + $("#hapHeader").height() + ($("#hapPathBar").is(":visible") ? $("#hapPathBar").outerHeight() : 0));
 		    });
+		    // Re-place the path bar whenever the header changes height (its toolbar buttons appear and disappear)
+		    if (window.ResizeObserver) new ResizeObserver(function () { $(window).trigger("resize"); }).observe($("#hapHeader")[0]);
 		    if (navigator.appVersion.indexOf("Win") == -1) {
 		        $("#de").remove();
 		    }
@@ -1565,7 +1571,7 @@
 										$("#progressstatus").dialog({ autoOpen: true, modal: false, title: hap.common.getLocal("myfiles/waiting") + "..." });
 										$("#progressstatus .progress").progressbar({ value: 100 });
 										temp = null; 
-										setTimeout(function() { $("#progressstatus").dialog("close"); }, 500);
+										$("#progressstatus").dialog("close");
 										Load();
 									},
 									error: hap.common.jsonError
