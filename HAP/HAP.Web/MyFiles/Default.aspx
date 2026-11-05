@@ -1246,13 +1246,16 @@
 		var directedit = false;
 		$(function () {
 		    $(window).resize(function () {
+		        // Run the blue header the full width, keeping its buttons clear of the user name
+		        if ($("#hapUserTitle").length) $("#hapHeader").css({ right: 0, "padding-right": $("#hapUserTitle").outerWidth() + 30 });
+		        $("#search").css("top", $("#hapHeader").position().top + $("#hapHeader").outerHeight());
 		        $("#Tree").css("top", $("#search").position().top + $("#search").height()).css("height", $("#hapContent").height() - $("#search").height()); 
 		        $("#MyFiles").css("min-height", parseInt($("#hapContent").css("min-height").replace(/px/g, "")) - 2); 
 		        $("#Views,#directedit").css("left", $('#view').position().left);
 		        $("#hapPathBar").css("margin-left", $("#Tree").is(":visible") ? $("#Tree").width() + 5 : 0);
 		        // On narrow screens the header wraps onto several lines, so sit the path bar just below it
-		        $("#hapPathBar").css("margin-top", $("#Tree").is(":visible") ? 0 : Math.max(0, $("#hapHeader").outerHeight() - parseInt($("#hapContent").css("padding-top"), 10)));
-		        $("#MyFilesHeaddings").css("top", $("#hapHeader").position().top + $("#hapHeader").height() + ($("#hapPathBar").is(":visible") ? $("#hapPathBar").outerHeight() : 0));
+		        $("#hapPathBar").css("margin-top", Math.max(0, $("#hapHeader").outerHeight() - parseInt($("#hapContent").css("padding-top"), 10))).css("top", $("#hapHeader").outerHeight());
+		        $("#MyFilesHeaddings").css("top", $("#hapHeader").position().top + $("#hapHeader").outerHeight() + ($("#hapPathBar").is(":visible") ? $("#hapPathBar").outerHeight() : 0));
 		    });
 		    // Re-place the path bar whenever the header changes height (its toolbar buttons appear and disappear)
 		    if (window.ResizeObserver) new ResizeObserver(function () { $(window).trigger("resize"); }).observe($("#hapHeader")[0]);
